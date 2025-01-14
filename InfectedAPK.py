@@ -5,13 +5,21 @@ import subprocess
 import sys
 import urllib.request
 
+def clonarRepo(repoUrl, rutaDispositivo):
+    if not os.path.exists(rutaDispositivo):
+        print(f"\nClonando repositorio {repoUrl} en la ruta {rutaDispositivo}.\n")
+        os.makedirs(rutaDispositivo)
+        resultClonRepo = subprocess.run(["git", "clone", repoUrl, rutaDispositivo])
+
+        if resultClonRepo.returncode == 0:
+            print("\nRepositorio clonado con éxito.\n")
+        else:
+            print("\nError al clonar el repositorio.\n")
+            sys.exit(1)
+
 def verificar_programa_linux(programa):
     result_verificar_programas_linux = subprocess.run(["which", programa])
     return result_verificar_programas_linux.returncode == 0
-
-def verificar_programa_windows(programa):
-    result_verificar_programas_windowsx = subprocess.run(["where", programa])
-    return result_verificar_programas_windowsx.returncode == 0
 
 def instalar_dependencias_linux():
     if not verificar_programa_linux("java") or not verificar_programa_linux("curl") or not verificar_programa_linux("msfvenom") or not verificar_programa_linux("git"):
@@ -27,7 +35,7 @@ def instalar_dependencias_linux():
     if not verificar_programa_linux("java"):
         print("Instalando Java en Linux...")
         result_install_java = subprocess.run(["sudo", "apt-get", "install", "-y", "default-jre", "default-jdk"])
-        
+
         if result_install_java.returncode == 0:
             print("\nJava instalado con éxito.\n")
 
@@ -45,13 +53,13 @@ def instalar_dependencias_linux():
         else:
             print(f"\nError al instalar Curl en Linux:\n")
             sys.exit(1)
-    
+
     if not verificar_programa_linux("msfvenom"):
         print("\nInstalando Metasploit en Linux...\n")
         result_download_metasploit_script = subprocess.run(["curl", "https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb", "-o", "msfinstall"], check=True, capture_output=True, text=True)
         result_change_permissions_msfscript = subprocess.run(["chmod", "755", "msfinstall"])
         result_execute_msfscript = subprocess.run(["./msfinstall"])
-    
+
         if result_download_metasploit_script.returncode == 0 and result_change_permissions_msfscript.returncode == 0 and result_execute_msfscript.returncode == 0: 
             print("\nMetasploit instalado con éxito.\n")
 
@@ -70,6 +78,9 @@ def instalar_dependencias_linux():
             print(f"\nError al instalar GIT en Linux:\n")
             sys.exit(1)
 
+def verificar_programa_windows(programa):
+    result_verificar_programas_windowsx = subprocess.run(["where", programa])
+    return result_verificar_programas_windowsx.returncode == 0
 
 def instalar_dependencias_windows():
     if not verificar_programa_windows("java"):
@@ -82,7 +93,7 @@ def instalar_dependencias_windows():
         else:
             print(f"\nError al instalar Java en Windows:\n")
             sys.exit(1)
-    
+
     if not verificar_programa_windows("git"):
         print("Instalando GIT en Windows...")
         result_install_git_windows = subprocess.run(["C:\\InfectedAPK\\dependencies_Windows\\Git-2.47.1-64-bit.exe", "/VERYSILENT", "/NORESTART"])
@@ -93,7 +104,7 @@ def instalar_dependencias_windows():
         else:
             print(f"\nError al instalar GIT en Windows:\n")
             sys.exit(1)
-    
+
     if not os.path.exists("C:\\InfectedAPK\\dependencies_Windows\\metasploitframework-latest.msi"):
         print("Instalando Metasploit en Windows...")
         url = "https://windows.metasploit.com/metasploitframework-latest.msi"
@@ -115,9 +126,19 @@ def main():
 
     try:
         if sistema == "posix":
+            repoUrl = "https://github.com/APKentiTEAM/InfectedAPK.git"
+            rutaDispositivo = "/home/Documents/InfectedAPK"
+            clonarRepo(repoUrl, rutaDispositivo)
+
             instalar_dependencias_linux()
+
         elif sistema == "nt":
+            repoUrl = "https://github.com/APKentiTEAM/InfectedAPK.git"
+            rutaDispositivo = "C:\\InfectedAPK"
+            clonarRepo(repoUrl, rutaDispositivo)
+
             instalar_dependencias_windows()
+
         else:
             print(f"El sistema operativo {sistema} no es compatible.")
             sys.exit(1)
