@@ -49,7 +49,6 @@ def instalar_dependencias_linux(move_script_to_Tools_directory):
 
         if result_install_curl.returncode == 0:
             print("\nCurl instalado con éxito.\n")
-
         else:
             print(f"\nError al instalar Curl en Linux:\n")
             sys.exit(1)
@@ -60,7 +59,7 @@ def instalar_dependencias_linux(move_script_to_Tools_directory):
         result_change_permissions_msfscript = subprocess.run(["chmod", "755", "msfinstall"])
         result_execute_msfscript = subprocess.run(["./msfinstall"])
         result_mv_msfscript = subprocess.run(["mv", "msfinstall", move_script_to_Tools_directory])
-
+        
         if result_download_metasploit_script.returncode == 0 and result_change_permissions_msfscript.returncode == 0 and result_execute_msfscript.returncode == 0 and result_mv_msfscript.returncode == 00:
             print("\nMetasploit instalado con éxito.\n")
 
@@ -166,6 +165,14 @@ def main():
             destinantionRouteJar = "/usr/local/bin/apktool.jar"
             configureApktoolJar(originRouteJar, destinantionRouteJar)
 
+            originRoute = "/home/Documents/InfectedAPK/Tools/apktool"
+            destinantionRoute = "/usr/local/bin/apktool"
+            configureApktool_linux(originRoute, destinantionRoute)
+
+            originRouteJar = "/home/Documents/InfectedAPK/Tools/apktool.jar"
+            destinantionRouteJar = "/usr/local/bin/apktool.jar"
+            configureApktoolJar(originRouteJar, destinantionRouteJar)
+
         elif sistema == "nt":
             repoUrl = "https://github.com/APKentiTEAM/InfectedAPK.git"
             rutaDispositivo = "C:\\InfectedAPK"
@@ -183,4 +190,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
