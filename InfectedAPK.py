@@ -107,6 +107,10 @@ def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
     return result_verificar_programas_windowsx.returncode == 0
 
+import os
+import subprocess
+import sys
+
 def menu_linux_descomprimir_apk(ruta_apks):
     if not os.path.exists(ruta_apks):
         print(f"\nError: La ruta {ruta_apks} no existe.\n")
@@ -132,17 +136,44 @@ def menu_linux_descomprimir_apk(ruta_apks):
         print(f"\nHa seleccionado descomprimir: {apk_seleccionado}")
 
         apk_path = os.path.join(ruta_apks, apk_seleccionado)
-        destino = os.path.join(ruta_apks, os.path.splitext(apk_seleccionado)[0])
-        resultUnzipCompressedApk = subprocess.run(["unzip", apk_path, "-d", destino])
+
+        # Descomprimir el archivo .zip directamente al directorio
+        resultUnzipCompressedApk = subprocess.run(["unzip", "-j", apk_path, "-d", ruta_apks])
 
         if resultUnzipCompressedApk.returncode == 0:
-            print(f"\nAPK {apk_seleccionado} descomprimido con éxito en {destino}.")
+            print(f"\nAPK {apk_seleccionado} descomprimido con éxito en {ruta_apks}.")
+            # Verificar que el archivo .apk esté presente antes de descompilar
+            apk_file = os.path.join(ruta_apks, os.path.basename(apk_seleccionado).replace(".apk.zip", ".apk"))
+            if os.path.exists(apk_file):
+                decompileApk(apk_file)
+            else:
+                print(f"\nError: No se encontró el archivo APK descomprimido en {ruta_apks}.")
+                sys.exit(1)
         else:
             print(f"\nError al descomprimir el APK {apk_seleccionado}.")
             sys.exit(1)
 
     except ValueError:
         print("\nEntrada inválida. Por favor ingrese un número.")
+
+def decompileApk(apk_file):
+    # Eliminar la extensión .apk
+    apk_file_without_extension = os.path.splitext(apk_file)[0]
+
+    # Verificar si el archivo APK existe y es legible
+    if os.path.exists(apk_file) and os.access(apk_file, os.R_OK):
+        print(f"\n\nDecompilando APK con apktool...\n")
+        resultDecompileApk = subprocess.run(["apktool", "d", apk_file, "-o", apk_file_without_extension])
+
+        if resultDecompileApk.returncode == 0:
+            print(f"\nAPK decompilado con éxito en {apk_file_without_extension}.")
+        else:
+            print(f"\nError al decompilar el APK en {apk_file}.")
+            sys.exit(1)
+    else:
+        print(f"\nError: El archivo {apk_file} no existe o no tiene permisos de lectura.")
+        sys.exit(1)
+
 
 def instalar_dependencias_windows():
     if not verificar_programa_windows("java"):
