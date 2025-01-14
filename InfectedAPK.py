@@ -21,7 +21,7 @@ def verificar_programa_linux(programa):
     result_verificar_programas_linux = subprocess.run(["which", programa])
     return result_verificar_programas_linux.returncode == 0
 
-def instalar_dependencias_linux():
+def instalar_dependencias_linux(move_script_to_Tools_directory):
     if not verificar_programa_linux("java") or not verificar_programa_linux("curl") or not verificar_programa_linux("msfvenom") or not verificar_programa_linux("git"):
         result_update=subprocess.run(["sudo", "apt-get", "update"])
 
@@ -48,8 +48,7 @@ def instalar_dependencias_linux():
         result_install_curl = subprocess.run(["sudo", "apt-get", "install", "-y", "curl"])
 
         if result_install_curl.returncode == 0:
-            print("\n Curl instalado con éxito.\n")
-
+            print("\nCurl instalado con éxito.\n")
         else:
             print(f"\nError al instalar Curl en Linux:\n")
             sys.exit(1)
@@ -59,8 +58,9 @@ def instalar_dependencias_linux():
         result_download_metasploit_script = subprocess.run(["curl", "https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb", "-o", "msfinstall"], check=True, capture_output=True, text=True)
         result_change_permissions_msfscript = subprocess.run(["chmod", "755", "msfinstall"])
         result_execute_msfscript = subprocess.run(["./msfinstall"])
-
-        if result_download_metasploit_script.returncode == 0 and result_change_permissions_msfscript.returncode == 0 and result_execute_msfscript.returncode == 0:
+        result_mv_msfscript = subprocess.run(["mv", "msfinstall", move_script_to_Tools_directory])
+        
+        if result_download_metasploit_script.returncode == 0 and result_change_permissions_msfscript.returncode == 0 and result_execute_msfscript.returncode == 0 and result_mv_msfscript.returncode == 00:
             print("\nMetasploit instalado con éxito.\n")
 
         else:
@@ -101,7 +101,6 @@ def configureApktoolJar(originRouteJar, destinantionRouteJar):
         else:
             print("Error al configurar apktool.jar")
             sys.exit(1)
-
 
 def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
@@ -155,7 +154,16 @@ def main():
             rutaDispositivo = "/home/Documents/InfectedAPK"
             clonarRepo(repoUrl, rutaDispositivo)
 
-            instalar_dependencias_linux()
+            move_script_to_Tools_directory = "/home/Documents/InfectedAPK/Tools"
+            instalar_dependencias_linux(move_script_to_Tools_directory)
+
+            originRoute = "/home/Documents/InfectedAPK/Tools/apktool"
+            destinantionRoute = "/usr/local/bin/apktool"
+            configureApktool_linux(originRoute, destinantionRoute)
+
+            originRouteJar = "/home/Documents/InfectedAPK/Tools/apktool.jar"
+            destinantionRouteJar = "/usr/local/bin/apktool.jar"
+            configureApktoolJar(originRouteJar, destinantionRouteJar)
 
             originRoute = "/home/Documents/InfectedAPK/Tools/apktool"
             destinantionRoute = "/usr/local/bin/apktool"
