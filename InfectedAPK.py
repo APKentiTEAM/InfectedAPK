@@ -128,7 +128,7 @@ def menu_linux_descomprimir_apk(ruta_apks):
         print(f"\nHa seleccionado descomprimir: {apk_seleccionado}")
 
         apk_path = os.path.join(ruta_apks, apk_seleccionado)
-        
+       
         # Descomprimir el archivo .zip directamente al directorio
         resultUnzipCompressedApk = subprocess.run(["unzip", "-j", apk_path, "-d", ruta_apks])
 
