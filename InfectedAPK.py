@@ -25,7 +25,7 @@ def instalar_dependencias_linux():
     if not verificar_programa_linux("java") or not verificar_programa_linux("curl") or not verificar_programa_linux("msfvenom") or not verificar_programa_linux("git"):
         result_update=subprocess.run(["sudo", "apt-get", "update"])
 
-        if result_update.returncode == 0: 
+        if result_update.returncode == 0:
             print("\nUpdate realizado con éxito.\n")
 
         else:
@@ -47,7 +47,7 @@ def instalar_dependencias_linux():
         print("\nInstalando Curl en Linux...\n")
         result_install_curl = subprocess.run(["sudo", "apt-get", "install", "-y", "curl"])
 
-        if result_install_curl.returncode == 0: 
+        if result_install_curl.returncode == 0:
             print("\n Curl instalado con éxito.\n")
 
         else:
@@ -60,7 +60,7 @@ def instalar_dependencias_linux():
         result_change_permissions_msfscript = subprocess.run(["chmod", "755", "msfinstall"])
         result_execute_msfscript = subprocess.run(["./msfinstall"])
 
-        if result_download_metasploit_script.returncode == 0 and result_change_permissions_msfscript.returncode == 0 and result_execute_msfscript.returncode == 0: 
+        if result_download_metasploit_script.returncode == 0 and result_change_permissions_msfscript.returncode == 0 and result_execute_msfscript.returncode == 0:
             print("\nMetasploit instalado con éxito.\n")
 
         else:
@@ -71,12 +71,25 @@ def instalar_dependencias_linux():
         print("\nInstalando GIT en Linux...\n")
         result_install_git = subprocess.run(["sudo", "apt-get", "install", "-y", "git"])
 
-        if result_install_git.returncode == 0: 
+        if result_install_git.returncode == 0:
             print("\nGIT instalado con éxito.\n")
 
         else:
             print(f"\nError al instalar GIT en Linux:\n")
             sys.exit(1)
+
+def configureApktool_linux(originRoute, destinantionRoute):
+    if not os.path.exists(destinantionRoute):
+        print(f"\nCopiando apktool y estableciando permisos...")
+        resultCopyApktool = subprocess.run(["cp", originRoute, destinantionRoute])
+        resultGivePermissions = subprocess.run(["chmod", "+x", destinantionRoute])
+
+        if resultCopyApktool.returncode == 0 and resultGivePermissions.returncode == 0:
+            print("apktool configurado con éxito.")
+        else:
+            print("Error al configurar apktool.")
+            sys.exit(1)
+
 
 def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
@@ -87,7 +100,7 @@ def instalar_dependencias_windows():
         print("Instalando Java en Windows...")
         result_install_java_windows = subprocess.run(["C:\\InfectedAPK\\dependencies_Windows\\JavaSetup8u431.exe", "/s"])
 
-        if result_install_java_windows.returncode == 0: 
+        if result_install_java_windows.returncode == 0:
             print("\nJava instalado con éxito.\n")
 
         else:
@@ -98,7 +111,7 @@ def instalar_dependencias_windows():
         print("Instalando GIT en Windows...")
         result_install_git_windows = subprocess.run(["C:\\InfectedAPK\\dependencies_Windows\\Git-2.47.1-64-bit.exe", "/VERYSILENT", "/NORESTART"])
 
-        if result_install_git_windows.returncode == 0: 
+        if result_install_git_windows.returncode == 0:
             print("\nGIT instalado con éxito.\n")
 
         else:
@@ -114,7 +127,7 @@ def instalar_dependencias_windows():
         result_install_msfvenom = subprocess.run(["msiexec", "/i", "C:\\InfectedAPK\\dependencies_Windows\\metasploitframework-latest.msi", "/quiet", "/norestart"])
         print("Instalación completada con éxito.")
 
-        if result_install_msfvenom.returncode == 0: 
+        if result_install_msfvenom.returncode == 0:
             print("\nMsfvenom instalado con éxito.\n")
 
         else:
@@ -131,6 +144,10 @@ def main():
             clonarRepo(repoUrl, rutaDispositivo)
 
             instalar_dependencias_linux()
+
+            originRoute = "/home/Documents/InfectedAPK/Tools/apktool"
+            destinantionRoute = "/usr/local/bin/apktool"
+            configureApktool_linux(originRoute, destinantionRoute)
 
         elif sistema == "nt":
             repoUrl = "https://github.com/APKentiTEAM/InfectedAPK.git"
