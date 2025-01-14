@@ -90,6 +90,18 @@ def configureApktool_linux(originRoute, destinantionRoute):
             print("Error al configurar apktool.")
             sys.exit(1)
 
+def configureApktoolJar(originRouteJar, destinantionRouteJar):
+    if not os.path.exists(destinantionRouteJar):
+        print(f"\nCopiando apktool.jar y estableciando permisos...")
+        resultCopyApktoolJar = subprocess.run(["cp", originRouteJar, destinantionRouteJar])
+        resultGivePermissionsJar = subprocess.run(["chmod", "+x", destinantionRouteJar])
+
+        if resultCopyApktoolJar.returncode == 0 and resultGivePermissionsJar.returncode == 0:
+            print("apktool.jar configurado con éxito.")
+        else:
+            print("Error al configurar apktool.jar")
+            sys.exit(1)
+
 
 def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
@@ -148,6 +160,10 @@ def main():
             originRoute = "/home/Documents/InfectedAPK/Tools/apktool"
             destinantionRoute = "/usr/local/bin/apktool"
             configureApktool_linux(originRoute, destinantionRoute)
+
+            originRouteJar = "/home/Documents/InfectedAPK/apktool.jar"
+            destinantionRouteJar = "/usr/local/bin/apktool.jar"
+            configureApktoolJar(originRouteJar, destinantionRouteJar)
 
         elif sistema == "nt":
             repoUrl = "https://github.com/APKentiTEAM/InfectedAPK.git"
