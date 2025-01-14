@@ -49,6 +49,7 @@ def instalar_dependencias_linux(move_script_to_Tools_directory):
 
         if result_install_curl.returncode == 0:
             print("\nCurl instalado con éxito.\n")
+
         else:
             print(f"\nError al instalar Curl en Linux:\n")
             sys.exit(1)
@@ -59,7 +60,7 @@ def instalar_dependencias_linux(move_script_to_Tools_directory):
         result_change_permissions_msfscript = subprocess.run(["chmod", "755", "msfinstall"])
         result_execute_msfscript = subprocess.run(["./msfinstall"])
         result_mv_msfscript = subprocess.run(["mv", "msfinstall", move_script_to_Tools_directory])
-        
+
         if result_download_metasploit_script.returncode == 0 and result_change_permissions_msfscript.returncode == 0 and result_execute_msfscript.returncode == 0 and result_mv_msfscript.returncode == 00:
             print("\nMetasploit instalado con éxito.\n")
 
@@ -105,6 +106,33 @@ def configureApktoolJar(originRouteJar, destinantionRouteJar):
 def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
     return result_verificar_programas_windowsx.returncode == 0
+
+def menu_linux_descomprimir_apk(ruta_apks):
+    if not os.path.exists(ruta_apks):
+        print(f"\nError: La ruta {ruta_apks} no existe.\n")
+        return
+
+    apks = [f for f in os.listdir(ruta_apks) if f.endswith(".apk.zip")]
+    
+    if not apks:
+        print(f"\nNo se encontraron archivos APK en la ruta {ruta_apks}.")
+        return
+
+    print("\nAPKs disponibles para descompilar:")
+    for idx, apk in enumerate(apks, start=1):
+        print(f"{idx}. {apk}")
+
+    try:
+        seleccion = int(input("\nSeleccione el número del APK que desea descompilar: "))
+        if seleccion < 1 or seleccion > len(apks):
+            print("Selección inválida.")
+            return
+
+        apk_seleccionado = apks[seleccion - 1]
+        print(f"\nHa seleccionado descompilar: {apk_seleccionado}")
+
+    except ValueError:
+        print("\nEntrada inválida. Por favor ingrese un número.")
 
 def instalar_dependencias_windows():
     if not verificar_programa_windows("java"):
@@ -165,13 +193,8 @@ def main():
             destinantionRouteJar = "/usr/local/bin/apktool.jar"
             configureApktoolJar(originRouteJar, destinantionRouteJar)
 
-            originRoute = "/home/Documents/InfectedAPK/Tools/apktool"
-            destinantionRoute = "/usr/local/bin/apktool"
-            configureApktool_linux(originRoute, destinantionRoute)
-
-            originRouteJar = "/home/Documents/InfectedAPK/Tools/apktool.jar"
-            destinantionRouteJar = "/usr/local/bin/apktool.jar"
-            configureApktoolJar(originRouteJar, destinantionRouteJar)
+            ruta_apks = "/home/Documents/InfectedAPK/APKs"
+            menu_linux_descomprimir_apk(ruta_apks)
 
         elif sistema == "nt":
             repoUrl = "https://github.com/APKentiTEAM/InfectedAPK.git"
