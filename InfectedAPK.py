@@ -164,7 +164,7 @@ def decompileApk(apk_file):
             except subprocess.CalledProcessError as e:
                 print(f"Error al eliminar el directorio antiguo decompilado: {e}")
                 sys.exit(1)
-
+                
         # Decompilar el APK
         print(f"\nDecompilando APK con apktool...\n")
         resultDecompileApk = subprocess.run(["apktool", "d", apk_file, "-o", apk_file_without_extension])
@@ -249,7 +249,6 @@ def copyEvilSmali(ruta_apks, ruta_trojan_apk):
 
     except ValueError:
         print("\nEntrada inválida. Por favor ingrese un número.")
-
 
 def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
