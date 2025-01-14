@@ -113,23 +113,33 @@ def menu_linux_descomprimir_apk(ruta_apks):
         return
 
     apks = [f for f in os.listdir(ruta_apks) if f.endswith(".apk.zip")]
-    
+
     if not apks:
         print(f"\nNo se encontraron archivos APK en la ruta {ruta_apks}.")
         return
 
-    print("\nAPKs disponibles para descompilar:")
+    print("\nAPKs disponibles para descomprimir:")
     for idx, apk in enumerate(apks, start=1):
         print(f"{idx}. {apk}")
 
     try:
-        seleccion = int(input("\nSeleccione el número del APK que desea descompilar: "))
+        seleccion = int(input("\nSeleccione el número del APK que desea descomprimir: "))
         if seleccion < 1 or seleccion > len(apks):
             print("Selección inválida.")
             return
 
         apk_seleccionado = apks[seleccion - 1]
-        print(f"\nHa seleccionado descompilar: {apk_seleccionado}")
+        print(f"\nHa seleccionado descomprimir: {apk_seleccionado}")
+
+        apk_path = os.path.join(ruta_apks, apk_seleccionado)
+        destino = os.path.join(ruta_apks, os.path.splitext(apk_seleccionado)[0])
+        resultUnzipCompressedApk = subprocess.run(["unzip", apk_path, "-d", destino])
+
+        if resultUnzipCompressedApk.returncode == 0:
+            print(f"\nAPK {apk_seleccionado} descomprimido con éxito en {destino}.")
+        else:
+            print(f"\nError al descomprimir el APK {apk_seleccionado}.")
+            sys.exit(1)
 
     except ValueError:
         print("\nEntrada inválida. Por favor ingrese un número.")
