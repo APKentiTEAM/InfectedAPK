@@ -103,14 +103,6 @@ def configureApktoolJar(originRouteJar, destinantionRouteJar):
             print("Error al configurar apktool.jar")
             sys.exit(1)
 
-def verificar_programa_windows(programa):
-    result_verificar_programas_windowsx = subprocess.run(["where", programa])
-    return result_verificar_programas_windowsx.returncode == 0
-
-import os
-import subprocess
-import sys
-
 def menu_linux_descomprimir_apk(ruta_apks):
     if not os.path.exists(ruta_apks):
         print(f"\nError: La ruta {ruta_apks} no existe.\n")
@@ -136,7 +128,7 @@ def menu_linux_descomprimir_apk(ruta_apks):
         print(f"\nHa seleccionado descomprimir: {apk_seleccionado}")
 
         apk_path = os.path.join(ruta_apks, apk_seleccionado)
-
+        
         # Descomprimir el archivo .zip directamente al directorio
         resultUnzipCompressedApk = subprocess.run(["unzip", "-j", apk_path, "-d", ruta_apks])
 
@@ -163,8 +155,6 @@ def decompileApk(apk_file):
     # Verificar si el archivo APK existe y es legible
     if os.path.exists(apk_file) and os.access(apk_file, os.R_OK):
         print(f"\n\nDecompilando APK con apktool...\n")
-
-	# Decompilar APK
         resultDecompileApk = subprocess.run(["apktool", "d", apk_file, "-o", apk_file_without_extension])
 
         if resultDecompileApk.returncode == 0:
@@ -176,6 +166,9 @@ def decompileApk(apk_file):
         print(f"\nError: El archivo {apk_file} no existe o no tiene permisos de lectura.")
         sys.exit(1)
 
+def verificar_programa_windows(programa):
+    result_verificar_programas_windowsx = subprocess.run(["where", programa])
+    return result_verificar_programas_windowsx.returncode == 0
 
 def instalar_dependencias_windows():
     if not verificar_programa_windows("java"):
