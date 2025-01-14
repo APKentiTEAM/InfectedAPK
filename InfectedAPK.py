@@ -163,6 +163,8 @@ def decompileApk(apk_file):
     # Verificar si el archivo APK existe y es legible
     if os.path.exists(apk_file) and os.access(apk_file, os.R_OK):
         print(f"\n\nDecompilando APK con apktool...\n")
+
+	# Decompilar APK
         resultDecompileApk = subprocess.run(["apktool", "d", apk_file, "-o", apk_file_without_extension])
 
         if resultDecompileApk.returncode == 0:
