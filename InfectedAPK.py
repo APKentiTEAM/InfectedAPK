@@ -161,7 +161,7 @@ def main():
             destinantionRoute = "/usr/local/bin/apktool"
             configureApktool_linux(originRoute, destinantionRoute)
 
-            originRouteJar = "/home/Documents/InfectedAPK/apktool.jar"
+            originRouteJar = "/home/Documents/InfectedAPK/Tools/apktool.jar"
             destinantionRouteJar = "/usr/local/bin/apktool.jar"
             configureApktoolJar(originRouteJar, destinantionRouteJar)
 
