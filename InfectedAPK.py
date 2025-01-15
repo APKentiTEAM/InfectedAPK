@@ -440,6 +440,7 @@ def pythonServer(fileNewApkCompiled):
         print(f"Error al intentar abrir el terminal o ejecutar el servidor: {e}")
 
 
+
 def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
     return result_verificar_programas_windowsx.returncode == 0
